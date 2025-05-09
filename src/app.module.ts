@@ -6,12 +6,14 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './users/users.controller';
-import { UsersService } from './users/users.service';
 import { UsersModule } from './users/users.module';
 import { CommentController } from './comment/comment.controller';
 import { CommentModule } from './comment/comment.module';
 import { PostController } from './post/post.controller';
 import { PostModule } from './post/post.module';
+import { User } from './users/entities/user.entity';
+import { Post } from './post/entities/post.entity';
+import { Comment } from './comment/entities/comment.entity';
 
 @Module({
   imports: [
@@ -22,8 +24,9 @@ import { PostModule } from './post/post.module';
       username: 'root',
       password: 'zero21052002',
       database: 'social_media',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      // entities: [__dirname + '/../**/*.entity.{js,ts}'],
+      entities: [User, Comment, Post],
     }),
     AuthModule,
     UsersModule,
@@ -42,7 +45,6 @@ import { PostModule } from './post/post.module';
       useClass: HttpExceptionFilter,
     },
     AppService,
-    UsersService,
   ],
 })
 export class AppModule {}

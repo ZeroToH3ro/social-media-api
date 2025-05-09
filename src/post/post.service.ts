@@ -1,9 +1,9 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Post } from './entities/post.entities';
+import { Post } from './entities/post.entity';
 import { CreatePostDto } from './dto/create-post.dto';
-import { User } from '../users/entities/user.entities';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class PostService {
