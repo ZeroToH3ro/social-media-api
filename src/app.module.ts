@@ -14,6 +14,13 @@ import { PostModule } from './post/post.module';
 import { User } from './users/entities/user.entity';
 import { Post } from './post/entities/post.entity';
 import { Comment } from './comment/entities/comment.entity';
+import { LikeController } from './like/like.controller';
+import { LikeService } from './like/like.service';
+import { LikeModule } from './like/like.module';
+import { FollowModule } from './follow/follow.module';
+import { ProfileModule } from './profile/profile.module';
+import { TagModule } from './tag/tag.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -32,12 +39,18 @@ import { Comment } from './comment/entities/comment.entity';
     UsersModule,
     CommentModule,
     PostModule,
+    LikeModule,
+    FollowModule,
+    ProfileModule,
+    TagModule,
+    NotificationModule,
   ],
   controllers: [
     AppController,
     UsersController,
     CommentController,
     PostController,
+    LikeController,
   ],
   providers: [
     {
@@ -45,6 +58,7 @@ import { Comment } from './comment/entities/comment.entity';
       useClass: HttpExceptionFilter,
     },
     AppService,
+    LikeService,
   ],
 })
 export class AppModule {}

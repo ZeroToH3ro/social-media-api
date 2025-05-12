@@ -8,6 +8,7 @@ import {
 import { Comment } from '../../comment/entities/comment.entity';
 import { User } from '../../users/entities/user.entity';
 import { Transform } from 'class-transformer';
+import { Like } from '../../like/entities/like.entity';
 
 @Entity()
 export class Post {
@@ -28,4 +29,7 @@ export class Post {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
+
+  @OneToMany(() => Like, (like) => like.post)
+  likes: Like[];
 }
