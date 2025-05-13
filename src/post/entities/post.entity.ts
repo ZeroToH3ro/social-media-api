@@ -4,11 +4,13 @@ import {
   Column,
   OneToMany,
   ManyToOne,
+  ManyToMany,
 } from 'typeorm';
 import { Comment } from '../../comment/entities/comment.entity';
 import { User } from '../../users/entities/user.entity';
 import { Transform } from 'class-transformer';
 import { Like } from '../../like/entities/like.entity';
+import { Tag } from 'src/tag/entities/tag.entity';
 
 @Entity()
 export class Post {
@@ -32,4 +34,7 @@ export class Post {
 
   @OneToMany(() => Like, (like) => like.post)
   likes: Like[];
+
+  @ManyToMany(() => Tag, (tag) => tag.posts)
+  tags: Tag[];
 }

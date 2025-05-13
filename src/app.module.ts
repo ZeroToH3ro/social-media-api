@@ -15,12 +15,16 @@ import { User } from './users/entities/user.entity';
 import { Post } from './post/entities/post.entity';
 import { Comment } from './comment/entities/comment.entity';
 import { LikeController } from './like/like.controller';
-import { LikeService } from './like/like.service';
 import { LikeModule } from './like/like.module';
 import { FollowModule } from './follow/follow.module';
 import { ProfileModule } from './profile/profile.module';
 import { TagModule } from './tag/tag.module';
 import { NotificationModule } from './notification/notification.module';
+import { Like } from './like/entities/like.entity';
+import { Profile } from './profile/entities/profile.entity';
+import { Follow } from './follow/entities/follow.entity';
+import { Tag } from './tag/entities/tag.entity';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -32,8 +36,7 @@ import { NotificationModule } from './notification/notification.module';
       password: 'zero21052002',
       database: 'social_media',
       synchronize: true,
-      // entities: [__dirname + '/../**/*.entity.{js,ts}'],
-      entities: [User, Comment, Post],
+      entities: [User, Comment, Post, Like, Profile, Tag, Follow],
     }),
     AuthModule,
     UsersModule,
@@ -44,6 +47,7 @@ import { NotificationModule } from './notification/notification.module';
     ProfileModule,
     TagModule,
     NotificationModule,
+    CloudinaryModule,
   ],
   controllers: [
     AppController,
@@ -58,7 +62,6 @@ import { NotificationModule } from './notification/notification.module';
       useClass: HttpExceptionFilter,
     },
     AppService,
-    LikeService,
   ],
 })
 export class AppModule {}

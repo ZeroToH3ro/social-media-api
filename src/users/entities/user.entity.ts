@@ -1,6 +1,7 @@
 import { PrimaryGeneratedColumn, Column, OneToMany, Entity } from 'typeorm';
 import { Post } from '../../post/entities/post.entity';
 import { Comment } from '../../comment/entities/comment.entity';
+import { Follow } from 'src/follow/entities/follow.entity';
 
 @Entity('users')
 export class User {
@@ -18,4 +19,10 @@ export class User {
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];
+
+  @OneToMany(() => Follow, (user) => user.following)
+  following: Follow[];
+
+  @OneToMany(() => Follow, (user) => user.follower)
+  followers: Follow;
 }
