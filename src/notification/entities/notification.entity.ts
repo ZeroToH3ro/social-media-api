@@ -1,11 +1,10 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  ObjectIdColumn,
+  ObjectId,
   Column,
-  ManyToOne,
   CreateDateColumn,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
 
 export enum NotificationType {
   LIKE = 'like',
@@ -16,10 +15,13 @@ export enum NotificationType {
 
 @Entity()
 export class Notification {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @ObjectIdColumn()
+  _id: ObjectId;
 
-  @Column({ type: 'enum', enum: NotificationType })
+  @Column()
+  recipientId: string;
+
+  @Column({ type: 'string' })
   type: NotificationType;
 
   @Column()
@@ -28,11 +30,8 @@ export class Notification {
   @Column({ default: false })
   isRead: boolean;
 
-  @ManyToOne(() => User)
-  recipient: User;
-
   @Column({ nullable: true })
-  entityId: number;
+  entityId?: string;
 
   @CreateDateColumn()
   createdAt: Date;

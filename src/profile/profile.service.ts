@@ -24,12 +24,14 @@ export class ProfileService {
       throw new Error('Profile already exists for this user');
     }
 
-    if (profile) {
-      return this.profileRepository.create({
-        ...createProfileDto,
-        user,
-      });
-    }
+    const result = this.profileRepository.create({
+      ...createProfileDto,
+      user,
+    });
+
+    await this.profileRepository.save(result);
+
+    return result;
   }
 
   async findAll() {

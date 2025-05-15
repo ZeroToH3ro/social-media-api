@@ -25,18 +25,28 @@ import { Profile } from './profile/entities/profile.entity';
 import { Follow } from './follow/entities/follow.entity';
 import { Tag } from './tag/entities/tag.entity';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
+      host: process.env.DB_HOST,
       port: 3306,
-      username: 'root',
-      password: 'zero21052002',
-      database: 'social_media',
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
       synchronize: true,
       entities: [User, Comment, Post, Like, Profile, Tag, Follow],
+    }),
+    TypeOrmModule.forRoot({
+      name: 'mongodb',
+      type: 'mongodb',
+      host: process.env.MG_HOST,
+      port: 27017,
+      database: process.env.MG_DBNAME,
+      synchronize: true,
     }),
     AuthModule,
     UsersModule,
