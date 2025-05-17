@@ -42,11 +42,20 @@ export class AuthService {
     };
   }
 
-  async register(username: string, password: string): Promise<User> {
+  async register(
+    username: string,
+    email: string,
+    password: string,
+    confirmPassword: string,
+  ): Promise<User> {
     const hashedPassword = await hash(password, 10);
+    const hashedConfirmPassword = await hash(confirmPassword, 10);
+
     return this.usersService.create({
       username,
+      email,
       password: hashedPassword,
+      confirmPassword: hashedConfirmPassword,
     });
   }
 }

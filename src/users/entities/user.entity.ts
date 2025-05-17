@@ -14,6 +14,15 @@ export class User {
   @Column()
   password?: string;
 
+  @Column()
+  isEmailConfirmed?: boolean;
+
+  @Column()
+  email: string;
+
+  @Column()
+  confirmationToken?: string;
+
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[];
 

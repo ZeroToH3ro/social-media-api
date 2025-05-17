@@ -43,8 +43,6 @@ export class NotificationGateway
     @MessageBody() data: { notificationId: string },
     @ConnectedSocket() client: Socket,
   ) {
-    // Handle mark as read logic here
-    // e.g., update DB, then emit an event if needed
     this.server.to(client.id).emit('notificationRead', data.notificationId);
   }
 }

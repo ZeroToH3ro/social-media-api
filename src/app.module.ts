@@ -4,7 +4,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
 import { UsersController } from './users/users.controller';
 import { UsersModule } from './users/users.module';
 import { CommentController } from './comment/comment.controller';
@@ -26,6 +26,9 @@ import { Follow } from './follow/entities/follow.entity';
 import { Tag } from './tag/entities/tag.entity';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import * as dotenv from 'dotenv';
+import { ScheduleModule } from '@nestjs/schedule';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { TasksModule } from './tasks/tasks.module';
 dotenv.config();
 
 @Module({
@@ -48,6 +51,16 @@ dotenv.config();
       database: process.env.MG_DBNAME,
       synchronize: true,
     }),
+    ScheduleModule.forRoot(),
+    MailerModule.forRoot({
+      transport: {
+        host: process.env.EMAIL_HOST,
+        auth: {
+          user: process.env.EMAIL_USERNAME,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      },
+    }),
     AuthModule,
     UsersModule,
     CommentModule,
@@ -58,6 +71,7 @@ dotenv.config();
     TagModule,
     NotificationModule,
     CloudinaryModule,
+    TasksModule,
   ],
   controllers: [
     AppController,
