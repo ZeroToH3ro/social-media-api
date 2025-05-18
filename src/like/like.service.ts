@@ -1,54 +1,65 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Like } from './entities/like.entity';
-import { Post } from 'src/post/entities/post.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
+import { Post } from '../post/entities/post.entity';
+import { EmailQueueService } from '../queue/services/email-queue.service';
+import { NotificationQueueService } from '../queue/services/notification-queue.service';
 
 @Injectable()
 export class LikeService {
   constructor(
     @InjectRepository(Like)
-    private likeRepository: Repository<Like>,
+    private likesRepository: Repository<Like>,
     @InjectRepository(Post)
-    private postRepository: Repository<Post>,
+    private postsRepository: Repository<Post>,
+    private emailQueueService: EmailQueueService,
+    private notificationQueueService: NotificationQueueService,
   ) {}
 
-  async likePost(postId: number, user: User): Promise<Like> {
-    // Check post exists
-    const postExist = await this.postRepository.findOne({
+  async likePost(postId: number, user: User) {
+    const post = await this.postsRepository.findOne({
       where: { id: postId },
+      relations: ['user'],
     });
 
-    if (!postExist) {
-      throw new NotFoundException(`Post with ID ${postId} not found`);
+    if (!post) {
+      throw new Error('Post not found');
     }
 
-    const existingLike = await this.likeRepository.findOne({
-      where: {
-        post: { id: postId },
-        user: { id: user.id },
-      },
+    const existingLike = await this.likesRepository.findOne({
+      where: { post: { id: postId }, user: { id: user.id } },
     });
 
     if (existingLike) {
-      throw new ConflictException('You have already like this post');
+      throw new Error('You have already liked this post');
     }
 
-    const like = this.likeRepository.create({
-      post: postExist,
-      user,
-    });
+    const like = this.likesRepository.create({ post, user });
+    await this.likesRepository.save(like);
 
-    return this.likeRepository.save(like);
+    if (post.user.id !== user.id) {
+      await this.notificationQueueService.createPostLikedNotification(
+        post.user.id,
+        user.id,
+        post.id,
+      );
+
+      if (post.user.email) {
+        await this.emailQueueService.sendPostLikedNotification(
+          post.user.email,
+          user.username,
+          post.title || `Post #${post.id}`,
+        );
+      }
+    }
+
+    return { message: 'Post liked successfully' };
   }
 
   async unlikePost(postId: number, user: User): Promise<void> {
-    const result = await this.likeRepository.delete({
+    const result = await this.likesRepository.delete({
       post: { id: postId },
       user: { id: user.id },
     });
@@ -59,7 +70,7 @@ export class LikeService {
   }
 
   async getLikesByPostId(postId: number): Promise<Like[]> {
-    const post = await this.postRepository.findOne({
+    const post = await this.postsRepository.findOne({
       where: { id: postId },
     });
 
@@ -67,14 +78,14 @@ export class LikeService {
       throw new NotFoundException(`Post with ID ${postId} not found`);
     }
 
-    return this.likeRepository.find({
+    return this.likesRepository.find({
       where: { post: { id: postId } },
       relations: ['user'],
     });
   }
 
   async hasUserLikedPost(postId: number, userId: number): Promise<boolean> {
-    const like = await this.likeRepository.findOne({
+    const like = await this.likesRepository.findOne({
       where: {
         post: { id: postId },
         user: { id: userId },
@@ -85,7 +96,7 @@ export class LikeService {
   }
 
   async getLikedPostsByUser(userId: number): Promise<Post[]> {
-    const likes = await this.likeRepository.find({
+    const likes = await this.likesRepository.find({
       where: { user: { id: userId } },
       relations: ['post', 'post.user'],
     });

@@ -37,4 +37,7 @@ export class Post {
 
   @ManyToMany(() => Tag, (tag) => tag.posts)
   tags: Tag[];
+
+  @Column()
+  title: string;
 }

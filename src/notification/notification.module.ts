@@ -1,14 +1,18 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationService } from './notification.service';
 import { NotificationController } from './notification.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { NotificationGateway } from './notification.gateway';
 import { Notification } from './entities/notification.entity';
+import { NotificationGateway } from './notification.gateway';
+import { QueueModule } from '../queue/queue.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Notification], 'mongodb')],
+  imports: [
+    TypeOrmModule.forFeature([Notification], 'mongodb'),
+    forwardRef(() => QueueModule),
+  ],
   controllers: [NotificationController],
   providers: [NotificationService, NotificationGateway],
-  exports: [NotificationService],
+  exports: [NotificationService, NotificationGateway],
 })
 export class NotificationModule {}

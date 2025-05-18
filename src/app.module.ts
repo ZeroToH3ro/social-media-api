@@ -14,6 +14,7 @@ import { PostModule } from './post/post.module';
 import { User } from './users/entities/user.entity';
 import { Post } from './post/entities/post.entity';
 import { Comment } from './comment/entities/comment.entity';
+import { Notification } from './notification/entities/notification.entity';
 import { LikeController } from './like/like.controller';
 import { LikeModule } from './like/like.module';
 import { FollowModule } from './follow/follow.module';
@@ -29,6 +30,9 @@ import * as dotenv from 'dotenv';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { TasksModule } from './tasks/tasks.module';
+import { QueueModule } from './queue/queue.module';
+import { BullBoardAppModule } from './bull-board/bull-board.module';
+
 dotenv.config();
 
 @Module({
@@ -50,6 +54,7 @@ dotenv.config();
       port: 27017,
       database: process.env.MG_DBNAME,
       synchronize: true,
+      entities: [Notification],
     }),
     ScheduleModule.forRoot(),
     MailerModule.forRoot({
@@ -72,6 +77,8 @@ dotenv.config();
     NotificationModule,
     CloudinaryModule,
     TasksModule,
+    QueueModule,
+    BullBoardAppModule,
   ],
   controllers: [
     AppController,

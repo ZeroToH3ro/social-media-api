@@ -1,12 +1,10 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Follow } from './entities/follow.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
+import { EmailQueueService } from '../queue/services/email-queue.service';
+import { NotificationQueueService } from '../queue/services/notification-queue.service';
 
 @Injectable()
 export class FollowService {
@@ -15,27 +13,22 @@ export class FollowService {
     private followRepository: Repository<Follow>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private emailQueueService: EmailQueueService,
+    private notificationQueueService: NotificationQueueService,
   ) {}
 
-  async followUser(followerId: number, followingId: number): Promise<Follow> {
+  async followUser(followerId: number, followingId: number) {
+    // Prevent self-following
     if (followerId === followingId) {
-      throw new ConflictException('You can not follow yourself');
+      throw new Error('You cannot follow yourself');
     }
 
-    const follower = await this.userRepository.findOne({
-      where: {
-        id: followerId,
-      },
-    });
-    if (!follower) {
-      throw new NotFoundException(`User with ID ${followerId} not found`);
-    }
-
-    const following = await this.userRepository.findOne({
+    const followingUser = await this.userRepository.findOne({
       where: { id: followingId },
     });
-    if (!following) {
-      throw new NotFoundException(`User with ID ${followingId} not found`);
+
+    if (!followingUser) {
+      throw new Error('User not found');
     }
 
     const existingFollow = await this.followRepository.findOne({
@@ -46,18 +39,39 @@ export class FollowService {
     });
 
     if (existingFollow) {
-      throw new ConflictException('You are already following this user');
+      throw new Error('You are already following this user');
+    }
+
+    const follower = await this.userRepository.findOne({
+      where: { id: followerId },
+    });
+
+    if (!follower) {
+      throw new Error('Follower user not found');
     }
 
     const follow = this.followRepository.create({
-      follower,
-      following,
+      follower: { id: followerId },
+      following: { id: followingId },
     });
 
-    return this.followRepository.save(follow);
+    await this.followRepository.save(follow);
+
+    await this.notificationQueueService.createNewFollowerNotification(
+      followingId,
+      followerId,
+    );
+
+    if (followingUser.email) {
+      await this.emailQueueService.sendNewFollowerNotification(
+        followingUser.email,
+        follower.username,
+      );
+    }
+
+    return { message: 'Successfully followed user' };
   }
 
-  // Unfollow a user
   async unfollowUser(followerId: number, followingId: number) {
     const result = await this.followRepository.delete({
       follower: { id: followerId },
@@ -84,7 +98,6 @@ export class FollowService {
     });
   }
 
-  // Get users followed by a user
   async getFollowing(userId: number): Promise<Follow[]> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -98,7 +111,6 @@ export class FollowService {
   }
 
   async countFollowers(userId: number): Promise<number> {
-    // Check if user exists
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
@@ -110,7 +122,6 @@ export class FollowService {
   }
 
   async countFollowing(userId: number): Promise<number> {
-    // Check if user exists
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);

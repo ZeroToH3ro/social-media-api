@@ -1,38 +1,26 @@
-import {
-  Entity,
-  ObjectIdColumn,
-  ObjectId,
-  Column,
-  CreateDateColumn,
-} from 'typeorm';
-
-export enum NotificationType {
-  LIKE = 'like',
-  COMMENT = 'comment',
-  FOLLOW = 'follow',
-  MENTION = 'mention',
-}
+import { Entity, Column, ObjectIdColumn } from 'typeorm';
+import { NotificationType } from '../../queue/services/notification-queue.service';
 
 @Entity()
 export class Notification {
   @ObjectIdColumn()
-  _id: ObjectId;
+  id: string;
 
   @Column()
-  recipientId: string;
-
-  @Column({ type: 'string' })
-  type: NotificationType;
+  userId: string;
 
   @Column()
   content: string;
 
+  @Column()
+  type: NotificationType;
+
+  @Column()
+  metadata: Record<string, any>;
+
   @Column({ default: false })
   isRead: boolean;
 
-  @Column({ nullable: true })
-  entityId?: string;
-
-  @CreateDateColumn()
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 }

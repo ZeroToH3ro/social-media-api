@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { UsersService } from 'src/users/users.service';
-import { MailerService } from '@nestjs-modules/mailer';
+import { EmailQueueService } from '../queue/services/email-queue.service';
 
 @Injectable()
 export class EmailConfirmationCronService {
   constructor(
     private readonly userService: UsersService,
-    private readonly mailerService: MailerService,
+    private readonly emailQueueService: EmailQueueService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -16,20 +16,11 @@ export class EmailConfirmationCronService {
 
     for (const user of unconfirmedUsers) {
       if (user.confirmationToken) {
-        await this.sendConfirmationEmail(user.email, user.confirmationToken);
+        await this.emailQueueService.sendConfirmationEmail(
+          user.email,
+          user.confirmationToken,
+        );
       }
     }
-  }
-
-  async sendConfirmationEmail(email: string, token: string) {
-    const app = process.env.DOMAIN_BE ?? 'http://localhost:3000';
-    const confirmationUrl = `${app}/confirm?token=${token}`;
-
-    await this.mailerService.sendMail({
-      from: '"Z3ro App" z3ro@gmail.com',
-      to: email,
-      subject: 'Please confirm your email',
-      html: `<p>Click <a href="${confirmationUrl}">here</a> to confirm your email.`,
-    });
   }
 }
