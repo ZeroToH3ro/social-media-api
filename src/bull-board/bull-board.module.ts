@@ -11,16 +11,12 @@ import { BullAdapter } from '@bull-board/api/bullAdapter';
       adapter: ExpressAdapter,
     }),
     BullBoardModule.forFeature({
-      queues: [
-        {
-          name: 'email',
-          adapter: BullAdapter,
-        },
-        {
-          name: 'notification',
-          adapter: BullAdapter,
-        },
-      ],
+      name: 'email',
+      adapter: BullAdapter,
+    }),
+    BullBoardModule.forFeature({
+      name: 'notification',
+      adapter: BullAdapter,
     }),
     BullModule.registerQueue({ name: 'email' }, { name: 'notification' }),
   ],

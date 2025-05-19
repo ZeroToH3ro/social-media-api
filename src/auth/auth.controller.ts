@@ -8,6 +8,7 @@ import {
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user-dto';
 import { ApiBody } from '@nestjs/swagger';
+import { UserLoginDto } from './dto/user-login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,11 +28,10 @@ export class AuthController {
 
   @Post('login')
   @ApiBody({ type: CreateUserDto })
-  @UsePipes(new ValidationPipe())
-  async login(@Body() createUserDto: CreateUserDto) {
+  async login(@Body() loginUserDto: UserLoginDto) {
     const user = await this.authService.validateUser(
-      createUserDto.username,
-      createUserDto.password,
+      loginUserDto.username,
+      loginUserDto.password,
     );
     if (!user) throw new Error('Invalid credentials');
     return this.authService.login(user);

@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as basicAuth from 'express-basic-auth';
 import * as dotenv from 'dotenv';
-dotenv.load();
+dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

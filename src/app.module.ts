@@ -32,6 +32,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { TasksModule } from './tasks/tasks.module';
 import { QueueModule } from './queue/queue.module';
 import { BullBoardAppModule } from './bull-board/bull-board.module';
+import { NatsModule } from './nats/nats.module';
 
 dotenv.config();
 
@@ -79,6 +80,7 @@ dotenv.config();
     TasksModule,
     QueueModule,
     BullBoardAppModule,
+    NatsModule,
   ],
   controllers: [
     AppController,
