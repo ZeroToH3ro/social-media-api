@@ -33,6 +33,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { QueueModule } from './queue/queue.module';
 import { BullBoardAppModule } from './bull-board/bull-board.module';
 import { NatsModule } from './nats/nats.module';
+import { EventsModule } from './events/events.module';
 
 dotenv.config();
 
@@ -81,6 +82,7 @@ dotenv.config();
     QueueModule,
     BullBoardAppModule,
     NatsModule,
+    EventsModule,
   ],
   controllers: [
     AppController,

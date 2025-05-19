@@ -4,10 +4,19 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as basicAuth from 'express-basic-auth';
 import * as dotenv from 'dotenv';
+import { Transport } from '@nestjs/microservices';
 dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.connectMicroservice({
+    transport: Transport.NATS,
+    options: {
+      servers: [process.env.NATS_URL || 'nats://localhost:4222'],
+      queue: 'social_media_queue',
+    },
+  });
 
   // Enable CORS
   app.enableCors();

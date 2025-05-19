@@ -4,16 +4,14 @@ import { Repository } from 'typeorm';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { User } from '../users/entities/user.entity';
 import { Comment } from './entities/comment.entity';
-import { EmailQueueService } from '../queue/services/email-queue.service';
-import { NotificationQueueService } from '../queue/services/notification-queue.service';
+import { CommentCreatedPublisher } from '../events/publishers/comment.publishers';
 
 @Injectable()
 export class CommentService {
   constructor(
     @InjectRepository(Comment)
     private commentsRepository: Repository<Comment>,
-    private emailQueueService: EmailQueueService,
-    private notificationQueueService: NotificationQueueService,
+    private commentCreatedPublisher: CommentCreatedPublisher,
   ) {}
 
   async create(createCommentDto: CreateCommentDto, user: User) {
@@ -24,28 +22,16 @@ export class CommentService {
 
     const savedComment = await this.commentsRepository.save(comment);
 
-    // Get post author to send notification
-    const postAuthorId = savedComment.post?.user?.id;
-
-    // Only create notification if the post author isn't the same as the commenter
-    if (postAuthorId && postAuthorId !== user.id) {
-      // Add notification to queue
-      await this.notificationQueueService.createNewCommentNotification(
-        postAuthorId,
-        user.id,
-        createCommentDto.postId,
-        savedComment.id,
-      );
-
-      // If we have the post author's email, send an email notification
-      if (savedComment.post?.user?.email) {
-        await this.emailQueueService.sendNewCommentNotification(
-          savedComment.post.user.email,
-          user.username,
-          savedComment.post.title || `Post #${createCommentDto.postId}`,
-        );
-      }
-    }
+    // Publish comment created event
+    this.commentCreatedPublisher.publish(
+      {
+        id: savedComment.id,
+        content: savedComment.content,
+        user: savedComment.user,
+        post: savedComment.post,
+      },
+      user.id,
+    );
 
     return savedComment;
   }

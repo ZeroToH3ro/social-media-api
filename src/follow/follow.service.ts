@@ -3,8 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Follow } from './entities/follow.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { EmailQueueService } from '../queue/services/email-queue.service';
-import { NotificationQueueService } from '../queue/services/notification-queue.service';
+import { UserFollowedPublisher } from '../events/publishers/follow.publishers';
 
 @Injectable()
 export class FollowService {
@@ -13,8 +12,7 @@ export class FollowService {
     private followRepository: Repository<Follow>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private emailQueueService: EmailQueueService,
-    private notificationQueueService: NotificationQueueService,
+    private userFollowedPublisher: UserFollowedPublisher,
   ) {}
 
   async followUser(followerId: number, followingId: number) {
@@ -42,14 +40,6 @@ export class FollowService {
       throw new Error('You are already following this user');
     }
 
-    const follower = await this.userRepository.findOne({
-      where: { id: followerId },
-    });
-
-    if (!follower) {
-      throw new Error('Follower user not found');
-    }
-
     const follow = this.followRepository.create({
       follower: { id: followerId },
       following: { id: followingId },
@@ -57,17 +47,8 @@ export class FollowService {
 
     await this.followRepository.save(follow);
 
-    await this.notificationQueueService.createNewFollowerNotification(
-      followingId,
-      followerId,
-    );
-
-    if (followingUser.email) {
-      await this.emailQueueService.sendNewFollowerNotification(
-        followingUser.email,
-        follower.username,
-      );
-    }
+    // Publish user followed event
+    this.userFollowedPublisher.publish({ followerId, followingId }, followerId);
 
     return { message: 'Successfully followed user' };
   }

@@ -18,12 +18,13 @@ export class NatsService {
     this.logger.log('NATS client disconnected');
   }
 
-  publish(subject: string, data: any): void {
+  publish(subject: string, data: any) {
     try {
       this.logger.debug(`Publishing to ${subject}: ${JSON.stringify(data)}`);
       this.natsClient.emit(subject, data);
     } catch (error) {
       this.logger.error(`Error publishing to ${subject}`, error.stack);
+      throw error;
     }
   }
 

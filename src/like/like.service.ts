@@ -4,8 +4,7 @@ import { Repository } from 'typeorm';
 import { Like } from './entities/like.entity';
 import { User } from '../users/entities/user.entity';
 import { Post } from '../post/entities/post.entity';
-import { EmailQueueService } from '../queue/services/email-queue.service';
-import { NotificationQueueService } from '../queue/services/notification-queue.service';
+import { PostLikedPublisher } from '../events/publishers/post.publishers';
 
 @Injectable()
 export class LikeService {
@@ -14,11 +13,11 @@ export class LikeService {
     private likesRepository: Repository<Like>,
     @InjectRepository(Post)
     private postsRepository: Repository<Post>,
-    private emailQueueService: EmailQueueService,
-    private notificationQueueService: NotificationQueueService,
+    private postLikedPublisher: PostLikedPublisher,
   ) {}
 
   async likePost(postId: number, user: User) {
+    // Check if post exists
     const post = await this.postsRepository.findOne({
       where: { id: postId },
       relations: ['user'],
@@ -28,6 +27,7 @@ export class LikeService {
       throw new Error('Post not found');
     }
 
+    // Check if user has already liked the post
     const existingLike = await this.likesRepository.findOne({
       where: { post: { id: postId }, user: { id: user.id } },
     });
@@ -36,23 +36,17 @@ export class LikeService {
       throw new Error('You have already liked this post');
     }
 
+    // Create new like
     const like = this.likesRepository.create({ post, user });
     await this.likesRepository.save(like);
 
+    // Only publish event if the post author isn't the same as the user liking it
     if (post.user.id !== user.id) {
-      await this.notificationQueueService.createPostLikedNotification(
-        post.user.id,
+      // Publish the post liked event
+      this.postLikedPublisher.publish(
+        { postId: post.id, userId: post.user.id },
         user.id,
-        post.id,
       );
-
-      if (post.user.email) {
-        await this.emailQueueService.sendPostLikedNotification(
-          post.user.email,
-          user.username,
-          post.title || `Post #${post.id}`,
-        );
-      }
     }
 
     return { message: 'Post liked successfully' };
