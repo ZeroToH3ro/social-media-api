@@ -31,10 +31,8 @@ export class NotificationQueueProcessor {
     const { userId, type, metadata, isRead } = job.data;
 
     try {
-      // Format content based on notification type
       const content = this.formatNotificationContent(type);
 
-      // Create notification in database
       const notification = await this.notificationService.create({
         userId: userId.toString(),
         content,
@@ -43,7 +41,6 @@ export class NotificationQueueProcessor {
         isRead: isRead || false,
       });
 
-      // Send real-time notification using WebSockets
       this.notificationGateway.sendNotificationToUser(
         userId.toString(),
         notification,

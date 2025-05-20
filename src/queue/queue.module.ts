@@ -19,8 +19,8 @@ import { NotificationModule } from '../notification/notification.module';
       {
         name: 'email',
         limiter: {
-          max: 100, // max 100 jobs per timeframe
-          duration: 60000, // timeframe is 1 minute
+          max: 100,
+          duration: 60000,
         },
       },
       {
