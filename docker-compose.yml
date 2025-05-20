@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      target: build
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./test:/app/test
+    depends_on:
+      - mysql
+      - mongodb
+      - redis
+      - nats
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_USERNAME=${DB_USERNAME:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_NAME=${DB_NAME:-social_media}
+      - MG_HOST=mongodb
+      - MG_DBNAME=${MG_DBNAME:-social_media_notifications}
+      - REDIS
