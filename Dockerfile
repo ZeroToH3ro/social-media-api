@@ -5,16 +5,19 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8
 
-# Copy package files
+# Copy only package files first
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install
+RUN pnpm install --no-frozen-lockfile
 
-# Copy source code
+# Copy source files (excluding node_modules via .dockerignore)
 COPY . .
+
+# Fix permissions to avoid mode issues
+RUN chmod -R u+rwX .
 
 # Build the application
 RUN pnpm run build
@@ -26,12 +29,16 @@ FROM node:20-alpine AS production
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8
 
-# Copy package files and built files
-COPY --from=build /app/package.json /app/pnpm-lock.yaml ./
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install production dependencies
+RUN pnpm install --prod --no-frozen-lockfile
+
+# Copy built files from build stage
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
 
 # Set environment variables
 ENV NODE_ENV=production

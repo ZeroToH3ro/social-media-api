@@ -142,9 +142,6 @@ pnpm run start:prod
 ```bash
 # Development mode
 docker-compose up
-
-# Production mode
-docker-compose -f docker-compose.prod.yml up
 ```
 
 ---
