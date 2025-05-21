@@ -11,7 +11,7 @@ export abstract class Listener<T> {
   abstract consumerGroupName: string;
   abstract onMessage(data: T, event: Event<T>): Promise<void>;
 
-  @MessagePattern()
+  @MessagePattern(EventSubject)
   async listen(@Payload() event: Event<T>, @Ctx() context: NatsContext) {
     try {
       if (
