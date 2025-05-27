@@ -16,7 +16,6 @@ A full-stack social media API built with [NestJS](https://nestjs.com/), supporti
 - **Notifications stored in MongoDB**
 - **Real-time notifications via WebSockets (Socket.IO)**
 - **Message queuing with Bull/Redis**
-- **Event-driven architecture with NATS**
 - Modular, scalable codebase
 
 ---
@@ -26,7 +25,6 @@ A full-stack social media API built with [NestJS](https://nestjs.com/), supporti
 - **Backend:** NestJS, TypeORM
 - **Databases:** MySQL (main data), MongoDB (notifications)
 - **Real-time:** WebSockets (Socket.IO)
-- **Message Broker:** NATS
 - **Queue System:** Bull/Redis
 - **Cloud Storage:** Cloudinary
 
@@ -104,9 +102,6 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
 
-# NATS
-NATS_URL=nats://localhost:4222
-
 # Bull Board Admin
 ADMIN_USER=admin
 ADMIN_PASSWORD=securepassword
@@ -117,7 +112,6 @@ When using Docker, the database hosts will be the service names:
 DB_HOST=mysql
 MG_HOST=mongodb
 REDIS_HOST=redis
-NATS_URL=nats://nats:4222
 ```
 
 ---
@@ -229,7 +223,6 @@ For cloud deployments, see [NestJS deployment docs](https://docs.nestjs.com/depl
 - [NestJS Documentation](https://docs.nestjs.com)
 - [Docker Documentation](https://docs.docker.com/)
 - [Bull Queue Documentation](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md)
-- [NATS Documentation](https://docs.nats.io/)
 - [Discord Community](https://discord.gg/G7Qnnhy)
 - [Devtools](https://devtools.nestjs.com)
 
