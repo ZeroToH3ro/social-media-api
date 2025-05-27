@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Notification Tester</title>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #notifications { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+        .notification { padding: 10px; margin-bottom: 10px; background-color: #f5f5f5; border-left: 4px solid #0066cc; }
+        #badge { display: inline-block; background-color: red; color: white; border-radius: 50%; width: 20px; height: 20px; text-align: center; margin-left: 10px; }
+        .controls { margin-top: 20px; }
+        input[type="text"] { padding: 8px; width: 300px; }
+        button { padding: 8px 16px; background-color: #0066cc; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Socket.IO Notification Tester</h1>
+    
+    <div class="controls">
+        <label for="jwt">JWT Token:</label>
+        <input type="text" id="jwt" placeholder="Paste your JWT token here">
+        <button id="connect">Connect</button>
+        <button id="disconnect" disabled>Disconnect</button>
+    </div>
+    
+    <h2>Notifications <span id="badge">0</span></h2>
+    <div id="notifications"></div>
+    
+    <div id="connection-status">Status: Disconnected</div>
+    
+    <script>
+        let socket;
+        const connectBtn = document.getElementById('connect');
+        const disconnectBtn = document.getElementById('disconnect');
+        const notificationsContainer = document.getElementById('notifications');
+        const badge = document.getElementById('badge');
+        const statusEl = document.getElementById('connection-status');
+        
+        connectBtn.addEventListener('click', () => {
+            const token = document.getElementById('jwt').value.trim();
+            if (!token) {
+                alert('Please enter a JWT token');
+                return;
+            }
+            
+            // Connect to socket with authentication
+            socket = io('http://localhost:3000/', {
+                auth: { token: token }
+            });
+            
+            // Connection events
+            socket.on('connect', () => {
+                statusEl.textContent = 'Status: Connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                addLogMessage('Connected to notification server');
+            });
+            
+            socket.on('connect_error', (err) => {
+                statusEl.textContent = `Status: Error - ${err.message}`;
+                addLogMessage(`Connection error: ${err.message}`);
+            });
+            
+            socket.on('disconnect', (reason) => {
+                statusEl.textContent = `Status: Disconnected (${reason})`;
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                addLogMessage(`Disconnected: ${reason}`);
+            });
+            
+            // Notification events
+            socket.on('notification', (notification) => {
+                addNotification(notification);
+            });
+            
+            socket.on('unread_count', (data) => {
+                badge.textContent = data.count;
+                addLogMessage(`Unread count updated: ${data.count}`);
+            });
+        });
+        
+        disconnectBtn.addEventListener('click', () => {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        });
+        
+        function addNotification(notification) {
+            const notifEl = document.createElement('div');
+            notifEl.className = 'notification';
+            
+            // Format the notification based on your structure
+            let content = `<strong>${notification.type || 'Notification'}</strong><br>`;
+            
+            if (notification.message) {
+                content += `Message: ${notification.message}<br>`;
+            }
+            
+            if (notification.createdAt) {
+                const date = new Date(notification.createdAt);
+                content += `Time: ${date.toLocaleTimeString()}<br>`;
+            }
+            
+            // Add all notification data for debugging
+            content += `<details><summary>Details</summary><pre>${JSON.stringify(notification, null, 2)}</pre></details>`;
+            
+            notifEl.innerHTML = content;
+            notificationsContainer.prepend(notifEl);
+        }
+        
+        function addLogMessage(message) {
+            const logEl = document.createElement('div');
+            logEl.className = 'notification';
+            logEl.innerHTML = `<em>[${new Date().toLocaleTimeString()}] ${message}</em>`;
+            notificationsContainer.prepend(logEl);
+        }
+    </script>
+</body>
+</html>

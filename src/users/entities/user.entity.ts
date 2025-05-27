@@ -23,6 +23,12 @@ export class User {
   @Column()
   confirmationToken?: string;
 
+  @Column({ nullable: true })
+  resetPasswordToken?: string;
+
+  @Column({ nullable: true })
+  resetPasswordExpires?: Date;
+
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[];
 

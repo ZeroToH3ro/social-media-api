@@ -34,15 +34,6 @@ export class EmailQueueService {
     });
   }
 
-  async sendWelcomeEmail(email: string, username: string) {
-    return this.addEmailJob({
-      to: email,
-      subject: 'Welcome to Social Media Platform',
-      template: EmailType.WELCOME,
-      data: { username },
-    });
-  }
-
   async sendConfirmationEmail(email: string, token: string) {
     const app = process.env.DOMAIN_BE ?? 'http://localhost:3000';
     const confirmationUrl = `${app}/users/confirm?token=${token}`;

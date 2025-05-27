@@ -32,8 +32,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { TasksModule } from './tasks/tasks.module';
 import { QueueModule } from './queue/queue.module';
 import { BullBoardAppModule } from './bull-board/bull-board.module';
-import { NatsModule } from './nats/nats.module';
-import { EventsModule } from './events/events.module';
 
 dotenv.config();
 
@@ -52,9 +50,9 @@ dotenv.config();
     TypeOrmModule.forRoot({
       name: 'mongodb',
       type: 'mongodb',
-      host: process.env.MG_HOST,
+      host: process.env.MG_HOST || 'social_media_mongo',
       port: 27017,
-      database: process.env.MG_DBNAME,
+      database: process.env.MG_DBNAME || 'localhost',
       synchronize: true,
       entities: [Notification],
     }),
@@ -81,8 +79,6 @@ dotenv.config();
     TasksModule,
     QueueModule,
     BullBoardAppModule,
-    NatsModule,
-    EventsModule,
   ],
   controllers: [
     AppController,

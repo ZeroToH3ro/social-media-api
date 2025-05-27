@@ -107,9 +107,6 @@ importers:
       mysql2:
         specifier: ^3.14.1
         version: 3.14.1
-      nats:
-        specifier: ^2.29.3
-        version: 2.29.3
       nodemailer:
         specifier: ^7.0.3
         version: 7.0.3
@@ -9300,6 +9297,7 @@ snapshots:
   nats@2.29.3:
     dependencies:
       nkeys.js: 1.1.0
+    optional: true
 
   natural-compare@1.4.0: {}
 
@@ -9315,6 +9313,7 @@ snapshots:
   nkeys.js@1.1.0:
     dependencies:
       tweetnacl: 1.0.3
+    optional: true
 
   no-case@2.3.2:
     dependencies:
@@ -10318,7 +10317,8 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tweetnacl@1.0.3: {}
+  tweetnacl@1.0.3:
+    optional: true
 
   type-check@0.4.0:
     dependencies:

@@ -38,6 +38,10 @@ export class UsersService {
     return this.usersRepository.findOneBy({ username });
   }
 
+  findOneByEmail(email: string) {
+    return this.usersRepository.findOneBy({ email });
+  }
+
   async findUnconfirmedUser(): Promise<User[]> {
     const result = await this.usersRepository.find({
       where: { isEmailConfirmed: false },

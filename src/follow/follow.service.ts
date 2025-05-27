@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Follow } from './entities/follow.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { UserFollowedPublisher } from '../events/publishers/follow.publishers';
+import { EmailQueueService } from 'src/queue/services/email-queue.service';
 
 @Injectable()
 export class FollowService {
@@ -12,7 +12,7 @@ export class FollowService {
     private followRepository: Repository<Follow>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private userFollowedPublisher: UserFollowedPublisher,
+    private emailQueueService: EmailQueueService,
   ) {}
 
   async followUser(followerId: number, followingId: number) {
@@ -25,8 +25,16 @@ export class FollowService {
       where: { id: followingId },
     });
 
-    if (!followingUser) {
-      throw new Error('User not found');
+    if (!followingUser || !followingUser.email) {
+      throw new Error('User to follow not found or has no email.');
+    }
+
+    const followerUser = await this.userRepository.findOne({
+      where: { id: followerId },
+    });
+
+    if (!followerUser) {
+      throw new Error('Follower user not found.');
     }
 
     const existingFollow = await this.followRepository.findOne({
@@ -47,8 +55,16 @@ export class FollowService {
 
     await this.followRepository.save(follow);
 
-    // Publish user followed event
-    this.userFollowedPublisher.publish({ followerId, followingId }, followerId);
+    // Send notification to the followed user
+    try {
+      await this.emailQueueService.sendNewFollowerNotification(
+        followingUser.email,
+        followerUser.username,
+      );
+    } catch (error) {
+      console.error('Failed to queue new follower notification email:', error);
+      // Decide if you want to throw an error or just log it. For now, just logging.
+    }
 
     return { message: 'Successfully followed user' };
   }

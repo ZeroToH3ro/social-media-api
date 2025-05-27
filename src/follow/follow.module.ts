@@ -5,14 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Follow } from './entities/follow.entity';
 import { QueueModule } from 'src/queue/queue.module';
-import { EventsModule } from 'src/events/events.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Follow, User]),
-    QueueModule,
-    EventsModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Follow, User]), QueueModule],
   controllers: [FollowController],
   providers: [FollowService],
   exports: [FollowService],

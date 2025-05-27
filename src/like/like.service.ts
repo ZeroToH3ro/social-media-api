@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Like } from './entities/like.entity';
 import { User } from '../users/entities/user.entity';
 import { Post } from '../post/entities/post.entity';
-import { PostLikedPublisher } from '../events/publishers/post.publishers';
+import { EmailQueueService } from '../queue/services/email-queue.service';
 
 @Injectable()
 export class LikeService {
@@ -13,7 +13,7 @@ export class LikeService {
     private likesRepository: Repository<Like>,
     @InjectRepository(Post)
     private postsRepository: Repository<Post>,
-    private postLikedPublisher: PostLikedPublisher,
+    private emailQueueService: EmailQueueService,
   ) {}
 
   async likePost(postId: number, user: User) {
@@ -40,13 +40,18 @@ export class LikeService {
     const like = this.likesRepository.create({ post, user });
     await this.likesRepository.save(like);
 
-    // Only publish event if the post author isn't the same as the user liking it
-    if (post.user.id !== user.id) {
-      // Publish the post liked event
-      this.postLikedPublisher.publish(
-        { postId: post.id, userId: post.user.id },
-        user.id,
-      );
+    // Send notification to the post author
+    if (post.user && post.user.email && post.user.id !== user.id) {
+      try {
+        await this.emailQueueService.sendPostLikedNotification(
+          post.user.email,
+          user.username,
+          post.title,
+        );
+      } catch (error) {
+        console.error('Failed to queue post liked notification email:', error);
+        // Decide if you want to throw an error or just log it
+      }
     }
 
     return { message: 'Post liked successfully' };
